@@ -1,0 +1,37 @@
+# Python 缓存文件
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# 虚拟环境
+venv/
+env/
+.venv/
+.env/
+
+# 编辑器配置
+.vscode/
+.idea/
+
+# 环境变量和配置
+*.env
+.env.*
+
+# 数据库和日志
+*.sqlite3
+*.db
+*.log
+
+# 上传和媒体文件
+uploaded_videos/
+media/
+
+# 单元测试缓存
+htmlcov/
+.coverage
+.cache
+
+# 其他
+.DS_Store
+Thumbs.db
