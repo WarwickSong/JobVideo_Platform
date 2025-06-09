@@ -1,25 +1,31 @@
+# app/auth/routes.py
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.auth import schemas, models, utils
 from app.db import SessionLocal
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
+from app.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_db():
+    # 获取数据库会话
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-# 注册
+# 注册接口
 @router.post("/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # 检查用户名是否已存在
     if db.query(models.User).filter(models.User.username == user.username).first():
         raise HTTPException(400, detail="用户名已存在")
+    # 创建新用户
     new_user = models.User(
         username=user.username,
         email=user.email,
@@ -31,20 +37,25 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-# 登录
+# 登录接口
 @router.post("/login")
 def login(data: schemas.UserLogin, db: Session = Depends(get_db)):
+    # 查询用户并校验密码
     user = db.query(models.User).filter(models.User.username == data.username).first()
     if not user or not utils.verify_password(data.password, user.password_hash):
         raise HTTPException(401, detail="用户名或密码错误")
+    # 生成 JWT token
     token = utils.create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
 
-# 当前用户
+# 获取当前用户
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
-        payload = jwt.decode(token, utils.SECRET_KEY, algorithms=[utils.ALGORITHM])
-        user_id = int(payload.get("sub"))
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        sub = payload.get("sub")
+        if sub is None:
+            raise HTTPException(401, detail="Token 无效")
+        user_id = int(sub)
     except (JWTError, ValueError):
         raise HTTPException(401, detail="Token 无效")
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -52,6 +63,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(404, detail="用户不存在")
     return user
 
+# 获取当前用户信息接口
 @router.get("/me", response_model=schemas.UserOut)
 def read_current_user(current_user: models.User = Depends(get_current_user)):
     return current_user
