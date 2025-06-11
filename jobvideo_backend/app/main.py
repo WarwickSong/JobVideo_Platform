@@ -2,6 +2,8 @@
 # 项目主入口，创建 FastAPI 应用并注册路由
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from app.video import routes as video_routes
 from app.routers import video, job  # 导入视频相关路由
 from app.auth import routes as auth_routes
 from app.db import Base, engine
@@ -10,6 +12,8 @@ from app.db import Base, engine
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()  # 创建 FastAPI 应用实例
+app.mount("/videos", StaticFiles(directory="uploaded_videos"), name="videos")
+app.include_router(video_routes.router)
 app.include_router(video.router)  # 注册视频路由
 app.include_router(job.router)
 app.include_router(auth_routes.router)
