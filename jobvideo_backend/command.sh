@@ -94,3 +94,6 @@ curl -X POST "http://localhost:8000/video/upload" ^
   "upload_time": "2025-07-22T13:12:58.538531"
 }
 
+# 获取视频列表
+GET http://localhost:8000/video/feed?skip=0&limit=10  
+

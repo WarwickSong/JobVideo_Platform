@@ -48,6 +48,7 @@ def login(data: schemas.UserLogin, db: Session = Depends(get_db)):
     token = utils.create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
 
+
 # 获取当前用户
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:

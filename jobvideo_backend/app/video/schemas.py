@@ -14,15 +14,15 @@ class VideoCreate(VideoBase):
 
 class VideoOut(BaseModel):
     id: int  # 视频ID
-    title: str
+    title: str  # 视频标题
     filename: str  # 视频文件名
-    description: str
+    description: str  # 视频描述
+    file_path: str  # 视频文件存储路径
+    cover_path: str | None  # 视频封面图路径，可选
+    created_at: datetime  # 创建时间
     upload_time: datetime  # 上传时间
-    file_path: str
-    cover_path: str | None
-    created_at: datetime
-    owner_username: str
+    owner_username: str  # 上传者用户名
 
     class Config:
-        orm_mode = True  # 支持从 ORM 对象读取数据
+        from_attributes = True  # 支持从 ORM 对象读取数据
 
