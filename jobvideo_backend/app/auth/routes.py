@@ -67,3 +67,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 @router.get("/me", response_model=schemas.UserOut)
 def read_current_user(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+# 列出所有用户接口
+@router.get("/users", response_model=list[schemas.UserOut])
+def list_users(db: Session = Depends(get_db)):
+    # 查询所有用户
+    users = db.query(models.User).all()
+    return users
+

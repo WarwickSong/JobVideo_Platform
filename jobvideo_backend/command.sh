@@ -43,20 +43,30 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/register" `
   -Headers @{ "Content-Type" = "application/json" } `
   -Body '{"username": "alice", "email": "a@x.com", "password": "123456", "role": "seeker"}'
 
+Invoke-RestMethod -Uri "http://localhost:8000/auth/register" `
+  -Method Post `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"username": "billy", "email": "b@x.com", "password": "123456", "role": "employer"}'
+
 # 登录获取 Token
 # 使用 curl 命令登录获取 Token
-curl -X POST http://localhost:8000/auth/login -H "Content-Type: application/json" \
-  -d '{"username": "alice", "password": "123456"}'
+"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzUzMTkzMzgwfQ.0LJemZ0Wsi9teJ_XoV2idTXOwpbElfSwhPj_gBLY2fQ"
+"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzUzMTk2MDU5fQ.QY_XqeLPzptOV3ETumHvL2cVJdLfRtT-7rNNW4f_KAM"
+
+curl -X POST http://localhost:8000/auth/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\": \"alice\", \"password\": \"123456\"}"
+  -d "{\"username\": \"billy\", \"password\": \"123456\"}"
 # 使用 PowerShell 登录获取 Token
 Invoke-RestMethod -Uri "http://localhost:8000/auth/login" `
   -Method Post `
   -Headers @{ "Content-Type" = "application/json" } `
-  -Body '{"username": "alice", "password": "123456"}'
+  -Body '{"username": "alice", "password": "123456"}'  # -Body '{"username": "billy", "password": "123456"}'
 # Token 过长的解决方法
 $response = Invoke-RestMethod -Uri "http://localhost:8000/auth/login" `
   -Method Post `
   -Headers @{ "Content-Type" = "application/json" } `
-  -Body '{"username": "alice", "password": "123456"}'
+  -Body '{"username": "alice", "password": "123456"}'  # -Body '{"username": "billy", "password": "123456"}'
 
 $response  # 这样会完整显示返回内容
 
@@ -69,3 +79,18 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/me" `
 
 Invoke-RestMethod -Uri "http://localhost:8000/auth/me" `
   -Headers @{ "Authorization" = "Bearer $($response.access_token)" }
+
+# 视频上传测试 
+# 使用 Linux 或 CMD 上传视频
+curl -X POST "http://localhost:8000/video/upload" ^
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzUzMTkzMzgwfQ.0LJemZ0Wsi9teJ_XoV2idTXOwpbElfSwhPj_gBLY2fQ" ^
+  -F "title=测试视频" ^
+  -F "file=@C:\Users\Zhihua Song\Desktop\工作室\栖下画廊\栖下画廊视频\栖下画廊 艺术史课程视频\AI时代 我们为什么学习艺术史.mp4"
+    
+{
+  "title": "测试视频",
+  "id": 1,
+  "filename": "3444cc98710940e8be6a866007a2fc5f.mp4",
+  "upload_time": "2025-07-22T13:12:58.538531"
+}
+

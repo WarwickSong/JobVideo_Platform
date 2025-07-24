@@ -18,6 +18,8 @@ def secure_filename(filename: str) -> str:
 @router.post("/upload_video/")
 async def upload_video(file: UploadFile = File(...)):
     # 视频上传接口
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="未提供文件名")
     filename = secure_filename(file.filename)  # 处理文件名，防止安全风险
     file_path = os.path.join(UPLOAD_DIR, filename)  # 拼接保存路径
     try:
