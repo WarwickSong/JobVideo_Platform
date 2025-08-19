@@ -2,10 +2,16 @@
 # app/video/models.py
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, ForeignKey, DateTime
+from sqlalchemy import Integer, String, ForeignKey, DateTime, Enum as SqlEnum
 from datetime import datetime, timezone
+import enum
 from app.db import Base
 
+
+class TargetType(str, enum.Enum):
+    job = "job"
+    resume = "resume"
+    company_intro = "company_intro"
 
 
 class Video(Base):
@@ -21,8 +27,12 @@ class Video(Base):
     upload_time: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))  # 上传时间
 
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))  # 上传者用户ID
-
     owner: Mapped["User"] = relationship("User", back_populates="videos")  # 关联用户对象
 
+    # 泛型绑定字段
+    target_type: Mapped[TargetType | None] = mapped_column(SqlEnum(TargetType), nullable=True)
+    target_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    # 其他注释的关联关系
     # category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.id"))  # 分类ID
-    # category: Mapped["Category"] = relationship("Category", back_populates="videos")  # 关联分
+    # category: Mapped["Category"] = relationship("Category", back_populates="videos")  # 关联分类
