@@ -6,25 +6,26 @@ from fastapi import APIRouter, UploadFile, Form, File, Depends, Query, HTTPExcep
 from sqlalchemy.orm import Session
 
 from app.job.models import JobPost
-# from app.resume.models import Resume
-# from app.company.models import Company
+from app.resume.models import Resume
+from app.company.models import Company
 from types import SimpleNamespace
-
-# 临时代替 Resume 和 Company
-class Resume(SimpleNamespace):
-    pass
-
-class Company(SimpleNamespace):
-    pass
-
 
 from app.auth.routes import get_current_user  # 获取当前登录用户的依赖
 from app.auth.models import User  # 用户模型
 from app.db import get_db  # 获取数据库会话的依赖
 from app.video import models, schemas, utils  # 导入视频相关模块
 
+from app.config import settings
+
 
 router = APIRouter(prefix="/video", tags=["视频模块"])  # 路由前缀和标签
+
+VIDEO_STORAGE_DIR = settings.VIDEO_STORAGE_DIR  # 上传文件保存的相对目录，与原接口保持一致
+os.makedirs(VIDEO_STORAGE_DIR, exist_ok=True)  # 如果目录不存在则自动创建
+
+def secure_filename(filename: str) -> str:
+    # 简单处理，防止目录遍历攻击，只保留文件名部分
+    return os.path.basename(filename)
 
 @router.post("/upload", response_model=schemas.VideoOut)
 async def upload_video(
@@ -65,10 +66,18 @@ def get_video_feed(
     db: Session = Depends(get_db),
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(10, ge=1, le=50, description="每页数量"),
+    target_type: schemas.TargetType | None = Query(None, description="按关联类型过滤视频"), 
 ):
+    # 1. 基础查询：查询视频表
+    query = db.query(models.Video)
 
+    # 2. 如果传递了target_type，添加过滤条件
+    if target_type:
+        query = query.filter(models.Video.target_type == target_type)
+        
+    # 3. 排序、分页
     videos = (
-        db.query(models.Video)
+        query
         .order_by(models.Video.created_at.desc())
         .offset(skip)
         .limit(limit)
@@ -77,7 +86,6 @@ def get_video_feed(
     # 添加上传者信息
 
     result = []
-    
     for video in videos:
         target_summary = None
         
@@ -99,6 +107,7 @@ def get_video_feed(
                     "id": resume.id,
                     "title": resume.title,
                     "experience_years": resume.experience_years,
+                    "skills": resume.skills.split(",") if resume.skills else [],
                     "major": resume.major,
                 }
         elif video.target_type == schemas.TargetType.company_intro and video.target_id:
@@ -123,7 +132,7 @@ def get_video_feed(
                 created_at=video.created_at,
                 upload_time=video.upload_time,
                 owner_username=video.owner.username if video.owner else "unknown",
-                target_type=schemas.TargetType(video.target_type) if video.target_type is not None else None,
+                target_type=video.target_type,
                 target_id=video.target_id,
                 target_summary=target_summary
             )

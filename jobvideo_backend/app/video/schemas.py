@@ -4,6 +4,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
+from app.video.models import TargetType
 
 
 class JobSummary(BaseModel):
@@ -24,12 +25,6 @@ class CompanyIntroSummary(BaseModel):
     id: int
     name: str
     industry: str
-
-
-class TargetType(str, Enum):
-    job = "job"
-    resume = "resume"
-    company_intro = "company_intro"
 
 
 class VideoWithTarget(BaseModel):

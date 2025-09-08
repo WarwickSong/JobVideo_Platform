@@ -14,5 +14,7 @@ class Settings:
 
     # 数据库连接（默认本地 SQLite）
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    # 视频文件存储目录
+    VIDEO_STORAGE_DIR: str = "video_storage"
 
 settings = Settings()

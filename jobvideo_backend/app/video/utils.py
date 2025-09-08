@@ -4,14 +4,17 @@
 import os
 import uuid
 import shutil
-from typing import Optional
-from fastapi import UploadFile, HTTPException
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 import asyncio
 
+from typing import Optional
+from functools import partial
+from fastapi import UploadFile, HTTPException
+from concurrent.futures import ThreadPoolExecutor
+
+from app.config import settings
+
 # 配置参数
-UPLOAD_DIR = "uploads/videos"
+VIDEO_STORAGE_DIR = settings.VIDEO_STORAGE_DIR
 CHUNK_SIZE = 5 * 1024 * 1024  # 5MB
 MAX_VIDEO_SIZE = 500 * 1024 * 1024  # 500MB
 VALID_CONTENT_TYPES = {
@@ -41,7 +44,7 @@ async def save_video_file(file: UploadFile) -> str:
     
     # 生成带正确扩展名的唯一文件名
     filename = f"{uuid.uuid4().hex}{ext}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
+    file_path = os.path.join(VIDEO_STORAGE_DIR, filename)
     
     # 确保目录存在
     os.makedirs(os.path.dirname(file_path), exist_ok=True)

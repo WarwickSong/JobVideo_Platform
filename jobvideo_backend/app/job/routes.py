@@ -25,6 +25,12 @@ def post_job(
     db.refresh(job_post)
     return job_post
 
+# 获取所有职位列表（增加一个与原接口兼容的路由）
+@router.get("/", response_model=List[schemas.JobPostOut])
+def list_all_jobs(db: Session = Depends(get_db)):
+    jobs = db.query(models.JobPost).filter(models.JobPost.status == "open").all()
+    return jobs
+
 # 职位列表查询（分页 + 关键词搜索）
 @router.get("/list", response_model=List[schemas.JobPostOut])
 def list_jobs(
@@ -46,3 +52,46 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
     if not job:
         raise HTTPException(404, detail="职位不存在")
     return job
+
+# 更新职位（仅雇主可更新自己发布的职位）
+@router.put("/{job_id}", response_model=schemas.JobPostOut)
+def update_job(
+    job_id: int,
+    job: schemas.JobPostCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(role_required(UserRole.employer))
+):
+    job_post = db.query(models.JobPost).filter(models.JobPost.id == job_id).first()
+    if not job_post:
+        raise HTTPException(status_code=404, detail="职位不存在")
+    
+    # 确保只有职位发布者可以更新
+    if job_post.employer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="无权更新此职位")
+    
+    # 更新职位信息
+    for key, value in job.dict().items():
+        setattr(job_post, key, value)
+    
+    db.commit()
+    db.refresh(job_post)
+    return job_post
+
+# 删除职位（仅雇主可删除自己发布的职位）
+@router.delete("/{job_id}")
+def delete_job(
+    job_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(role_required(UserRole.employer))
+):
+    job_post = db.query(models.JobPost).filter(models.JobPost.id == job_id).first()
+    if not job_post:
+        raise HTTPException(status_code=404, detail="职位不存在")
+    
+    # 确保只有职位发布者可以删除
+    if job_post.employer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="无权删除此职位")
+    
+    db.delete(job_post)
+    db.commit()
+    return {"message": "职位删除成功"}

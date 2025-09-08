@@ -1,23 +1,17 @@
 # app/auth/routes.py
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.auth import schemas, models, utils
-from app.db import SessionLocal
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.db import get_db
 from app.config import settings
+from app.auth import schemas, models, utils
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-def get_db():
-    # 获取数据库会话
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # 注册接口
 @router.post("/register", response_model=schemas.UserOut)
