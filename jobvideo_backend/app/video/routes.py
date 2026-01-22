@@ -5,15 +5,12 @@ import os
 from fastapi import APIRouter, UploadFile, Form, File, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 
-from app.job.models import JobPost
-from app.resume.models import Resume
-from app.company.models import Company
 from types import SimpleNamespace
 
 from app.auth.routes import get_current_user  # 获取当前登录用户的依赖
 from app.auth.models import User  # 用户模型
 from app.db import get_db  # 获取数据库会话的依赖
-from app.video import models, schemas, utils  # 导入视频相关模块
+from app.video import models, schemas, utils, resolvers  # 导入视频相关模块
 
 from app.config import settings
 
@@ -89,36 +86,38 @@ def get_video_feed(
     for video in videos:
         target_summary = None
         
-        # 根据不同的target_type关联相应的业务对象
-        if video.target_type == schemas.TargetType.job and video.target_id:
-            job = db.query(JobPost).filter(JobPost.id == video.target_id).first()
-            if job:
-                target_summary = {
-                    "id": job.id,
-                    "title": job.title,
-                    "location": job.location,
-                    "salary_min": job.salary_min,
-                    "salary_max": job.salary_max,
-                }
-        elif video.target_type == schemas.TargetType.resume and video.target_id:
-            resume = db.query(Resume).filter(Resume.id == video.target_id).first()
-            if resume:
-                target_summary = {
-                    "id": resume.id,
-                    "title": resume.title,
-                    "experience_years": resume.experience_years,
-                    "skills": resume.skills.split(",") if resume.skills else [],
-                    "major": resume.major,
-                }
-        elif video.target_type == schemas.TargetType.company_intro and video.target_id:
-            company = db.query(Company).filter(Company.id == video.target_id).first()
-            if company:
-                target_summary = {
-                    "id": company.id,
-                    "name": company.name,
-                    "industry": company.industry,
-                    "location": company.location,
-                }
+        # 使用resolver获取target信息
+        if video.target_type and video.target_id:
+            target_info = resolvers.resolve_target(
+                target_type=video.target_type,
+                target_id=video.target_id,
+                db=db
+            )
+            if target_info:
+                # 对于feed，只需要部分信息作为summary
+                if video.target_type == schemas.TargetType.job:
+                    target_summary = {
+                        "id": target_info["data"].get("id"),
+                        "title": target_info["data"].get("title"),
+                        "location": target_info["data"].get("location"),
+                        "salary_min": target_info["data"].get("salary_min"),
+                        "salary_max": target_info["data"].get("salary_max"),
+                    }
+                elif video.target_type == schemas.TargetType.resume:
+                    target_summary = {
+                        "id": target_info["data"].get("id"),
+                        "title": target_info["data"].get("title"),
+                        "experience_years": target_info["data"].get("experience_years"),
+                        "skills": target_info["data"].get("skills", []),
+                        "major": target_info["data"].get("major"),
+                    }
+                elif video.target_type == schemas.TargetType.company_intro:
+                    target_summary = {
+                        "id": target_info["data"].get("id"),
+                        "name": target_info["data"].get("name"),
+                        "industry": target_info["data"].get("industry"),
+                        "location": target_info["data"].get("location"),
+                    }
         
         # 构建返回数据
         result.append(
@@ -138,4 +137,33 @@ def get_video_feed(
             )
         )
     return result
+
+
+@router.get("/{video_id}", response_model=schemas.VideoDetail)
+def get_video_detail(video_id: int, db: Session = Depends(get_db)):
+    video = db.query(models.Video).filter(models.Video.id == video_id).first()
+    if not video:
+        raise HTTPException(status_code=404, detail="视频不存在")
+
+    target = None
+
+    if video.target_type and video.target_id:
+        target = resolvers.resolve_target(
+            target_type=video.target_type,
+            target_id=video.target_id,
+            db=db
+        )
+
+    return {
+        "id": video.id,
+        "title": video.title,
+        "description": video.description,
+        "file_path": video.file_path,
+        "filename": video.filename,
+        "cover_path": video.cover_path,
+        "created_at": video.created_at,
+        "upload_time": video.upload_time,
+        "owner_username": video.owner.username if video.owner else "unknown",
+        "target": target
+    }
 

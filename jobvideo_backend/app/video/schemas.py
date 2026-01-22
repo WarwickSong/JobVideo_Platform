@@ -73,3 +73,22 @@ class VideoOut(BaseModel):
     class Config:
         from_attributes = True  # 支持从 ORM 对象读取数据
 
+
+class VideoTarget(BaseModel):
+    type: str  # 目标类型（如职位、简历等）
+    label: str  # 目标类型的显示标签
+    data: dict  # 目标对象的详细数据
+
+
+class VideoDetail(BaseModel):
+    id: int  # 视频ID
+    title: str  # 视频标题
+    description: str  # 视频描述
+    file_path: str  # 视频文件存储路径
+    filename: str  # 视频文件名
+    cover_path: str | None  # 视频封面图路径，可选
+    created_at: datetime  # 创建时间
+    upload_time: datetime  # 上传时间
+    owner_username: str  # 上传者用户名
+    target: VideoTarget | None  # 绑定的目标对象，可选
+
