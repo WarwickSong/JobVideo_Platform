@@ -24,7 +24,7 @@ env/
 *.log
 
 # 上传和媒体文件
-uploaded_videos/
+video_storage/
 media/
 
 # 单元测试缓存

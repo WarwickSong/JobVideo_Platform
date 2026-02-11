@@ -30,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/videos", StaticFiles(directory="uploaded_videos"), name="videos")  # 静态文件目录，用于存放上传的视频文件
+app.mount("/videos", StaticFiles(directory="video_storage"), name="videos")  # 静态文件目录，用于存放上传的视频文件
 app.include_router(job_routes.router)  # 注册工作相关路由
 app.include_router(video_routes.router)  # 注册视频相关路由
 app.include_router(auth_routes.router)  # 注册认证相关路由

@@ -42,11 +42,14 @@ async def upload_video(
 
     file_path = await utils.save_video_file(file)  # 保存视频文件并返回保存后的文件名
 
+    # 改为完整URL
+    file_path_url = f"/videos/{os.path.basename(file_path)}"
+    
     # 创建视频记录
     video = models.Video(
         title=title,
         description=description,
-        file_path=file_path,
+        file_path=file_path_url,  # 使用完整URL
         filename=os.path.basename(file_path),  # 使用上传的文件名
         owner_id=current_user.id,
         target_type=target_type,
