@@ -6,12 +6,13 @@
       muted
       loop
       playsinline
+      controls
     ></video>
 
     <div class="info">
       <div>{{ video.title }}</div>
       <div v-if="video.target">
-        {{ video.target.label }}
+        {{ video.target }}
       </div>
     </div>
   </div>

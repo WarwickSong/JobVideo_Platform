@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000', // 改成你的后端地址
+  baseURL: '/api', // 使用相对路径
   headers: {
     Authorization: 'Bearer test-token'
   }
