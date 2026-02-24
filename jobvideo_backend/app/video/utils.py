@@ -1,5 +1,6 @@
-# 视频保存等辅助函数
 # app/video/utils.py
+# 视频处理工具函数
+# 功能：提供视频上传、编码检查、转码等辅助功能
 
 import os
 import uuid
@@ -15,34 +16,39 @@ import ffmpeg
 from app.config import settings
 
 # 配置参数
-VIDEO_STORAGE_DIR = settings.VIDEO_STORAGE_DIR
-CHUNK_SIZE = 5 * 1024 * 1024  # 5MB
-MAX_VIDEO_SIZE = 500 * 1024 * 1024  # 500MB
-VALID_CONTENT_TYPES = {
+VIDEO_STORAGE_DIR = settings.VIDEO_STORAGE_DIR  # 视频存储目录
+CHUNK_SIZE = 5 * 1024 * 1024  # 5MB，文件分块大小
+MAX_VIDEO_SIZE = 500 * 1024 * 1024  # 500MB，最大视频大小限制
+VALID_CONTENT_TYPES = {  # 支持的视频格式
     "video/mp4",
     "video/webm",
     "video/quicktime",
 }
 
 # 创建线程池用于执行阻塞操作
+# 避免阻塞事件循环，提高并发性能
 thread_pool = ThreadPoolExecutor(max_workers=4)
+
 
 def check_video_codec(video_path: str) -> Tuple[Optional[str], Optional[str]]:
     """
-    检查视频编码格式
+    检查视频编码格式函数：
+        分析视频文件，提取视频和音频的编码格式
     
     Args:
         video_path: 视频文件路径
     
     Returns:
-        (video_codec, audio_codec) 元组
+        Tuple[Optional[str], Optional[str]]: (video_codec, audio_codec) 元组
     """
     try:
+        # 使用ffmpeg.probe分析视频文件
         probe = ffmpeg.probe(video_path)
         
         video_codec = None
         audio_codec = None
         
+        # 遍历所有流，提取视频和音频编码
         for stream in probe['streams']:
             if stream['codec_type'] == 'video' and video_codec is None:
                 video_codec = stream['codec_name']
@@ -53,41 +59,46 @@ def check_video_codec(video_path: str) -> Tuple[Optional[str], Optional[str]]:
     except Exception:
         return None, None
 
+
 def is_valid_codec(video_codec: Optional[str], audio_codec: Optional[str]) -> bool:
     """
-    检查编码格式是否为 H.264 + AAC
+    检查编码格式是否有效函数：
+        验证视频编码是否为标准的 H.264 + AAC 格式
     
     Args:
         video_codec: 视频编码格式
         audio_codec: 音频编码格式
     
     Returns:
-        是否为有效的编码格式
+        bool: 是否为有效的编码格式
     """
     return video_codec == 'h264' and audio_codec == 'aac'
 
+
 def transcode_video(input_path: str, output_path: str) -> bool:
     """
-    转码视频为 H.264 + AAC 格式
+    视频转码函数：
+        将视频转码为 H.264 + AAC 格式，提高兼容性
     
     Args:
         input_path: 输入视频路径
         output_path: 输出视频路径
     
     Returns:
-        转码是否成功
+        bool: 转码是否成功
     """
     try:
+        # 使用ffmpeg进行转码
         (
             ffmpeg
             .input(input_path)
             .output(
                 output_path,
-                vcodec='libx264',
-                preset='medium',
-                crf=23,
-                acodec='aac',
-                audio_bitrate='128k'
+                vcodec='libx264',  # 视频编码为H.264
+                preset='medium',  # 编码速度和质量平衡
+                crf=23,  # 质量参数
+                acodec='aac',  # 音频编码为AAC
+                audio_bitrate='128k'  # 音频比特率
             )
             .overwrite_output()
             .run(capture_stdout=True, capture_stderr=True, timeout=600)
@@ -98,7 +109,21 @@ def transcode_video(input_path: str, output_path: str) -> bool:
     except Exception:
         return False
 
+
 async def save_video_file(file: UploadFile) -> str:
+    """
+    保存视频文件函数（异步）：
+        处理视频上传，包括文件保存、编码检查和转码
+    
+    Args:
+        file: 上传的视频文件对象
+    
+    Returns:
+        str: 保存后的文件路径
+    
+    Raises:
+        HTTPException: 当文件格式不支持、大小超限或转码失败时抛出异常
+    """
     # 验证文件类型
     if file.content_type not in VALID_CONTENT_TYPES:
         raise HTTPException(
@@ -187,4 +212,4 @@ async def save_video_file(file: UploadFile) -> str:
             detail=f"上传失败: {str(e)}"
         )
     finally:
-        await file.close()    
+        await file.close()
