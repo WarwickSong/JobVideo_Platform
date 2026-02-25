@@ -20,6 +20,7 @@ from app.interactions import routes as interactions_routes  # 交互行为模块
 # 模型导入（确保在创建表结构时能找到所有模型）
 from app.job import models as job_models  # 职位相关模型
 from app.video import models as video_models  # 视频相关模型
+from app.interactions import models as interactions_models  # 交互行为相关模型
 
 
 # 初始化数据库表结构

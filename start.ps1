@@ -26,7 +26,7 @@ try {
     Write-Host "  Backend service is not running, starting..." -ForegroundColor Gray
     # Start backend service
     Write-Host "[3/4] Starting backend service..." -ForegroundColor Yellow
-    $backendCommand = "conda activate $CONDA_ENV_NAME; Set-Location '$backendDir'; uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
+    $backendCommand = "conda activate $CONDA_ENV_NAME; Set-Location '$backendDir'; uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand -WindowStyle Normal
     Write-Host "  Backend service starting..." -ForegroundColor Green
     Start-Sleep -Seconds 3

@@ -26,8 +26,8 @@ class User(Base):
     # 用户名，唯一且可索引
     username: Mapped[str] = mapped_column(String, unique=True, index=True)
     
-    # 邮箱，唯一且可索引
-    email: Mapped[str] = mapped_column(String, unique=True, index=True)
+    # 手机号，唯一且可索引
+    phone: Mapped[str] = mapped_column(String(11), unique=True, index=True)
     
     # 密码哈希值（加密存储）
     password_hash: Mapped[str] = mapped_column(String)

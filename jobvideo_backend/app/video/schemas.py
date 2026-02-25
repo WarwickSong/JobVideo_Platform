@@ -23,7 +23,9 @@ class JobSummary(BaseModel):
 class ResumeSummary(BaseModel):
     id: int  # 简历ID
     title: str  # 职位标题
+    experience_years: int  # 工作年限
     skills: list[str]  # 技能列表
+    major: str  # 专业
 
 
 # 公司介绍摘要模式
@@ -32,6 +34,7 @@ class CompanyIntroSummary(BaseModel):
     id: int  # 公司ID
     name: str  # 公司名称
     industry: str  # 行业
+    location: str  # 所在地
 
 
 # 带目标的视频模式
@@ -49,6 +52,10 @@ class VideoWithTarget(BaseModel):
     target_type: TargetType | None  # 目标类型
     target_id: int | None  # 目标ID
     target_summary: dict | None  # 目标对象摘要，由后端构造
+    like_count: int  # 点赞数
+    favorite_count: int  # 收藏数
+    is_liked_by_me: bool  # 当前用户是否点赞
+    is_favorited_by_me: bool  # 当前用户是否收藏
 
     class Config:
         from_attributes = True
@@ -109,3 +116,7 @@ class VideoDetail(BaseModel):
     upload_time: datetime  # 上传时间
     owner_username: str  # 上传者用户名
     target: VideoTarget | None  # 绑定的目标对象
+    like_count: int  # 点赞数
+    favorite_count: int  # 收藏数
+    is_liked_by_me: bool  # 当前用户是否点赞
+    is_favorited_by_me: bool  # 当前用户是否收藏
