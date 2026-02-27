@@ -267,10 +267,10 @@ def get_video_feed(
                 target_type=video.target_type,
                 target_id=video.target_id,
                 target_summary=target_summary,
-                like_count=like_count_map.get(video.id, 0),  # 从字典映射获取点赞数
-                favorite_count=favorite_count_map.get(video.id, 0),  # 从字典映射获取收藏数
-                is_liked_by_me=video.id in liked_video_ids,  # 从集合判断是否点赞
-                is_favorited_by_me=video.id in favorited_video_ids  # 从集合判断是否收藏
+                like_count=int(like_count_map.get(video.id, 0)),
+                favorite_count=int(favorite_count_map.get(video.id, 0)),
+                is_liked_by_me=bool(video.id in liked_video_ids),
+                is_favorited_by_me=bool(video.id in favorited_video_ids)
             )
         )
     return result
@@ -344,8 +344,8 @@ def get_video_detail(
         "upload_time": video.upload_time,
         "owner_username": video.owner.username if video.owner else "unknown",
         "target": target,
-        "like_count": like_count,
-        "favorite_count": favorite_count,
-        "is_liked_by_me": is_liked_by_me,
-        "is_favorited_by_me": is_favorited_by_me
+        "like_count": int(like_count),
+        "favorite_count": int(favorite_count),
+        "is_liked_by_me": bool(is_liked_by_me),
+        "is_favorited_by_me": bool(is_favorited_by_me)
     }
