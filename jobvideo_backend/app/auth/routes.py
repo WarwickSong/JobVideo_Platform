@@ -18,7 +18,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # OAuth2密码认证方案
 # tokenUrl指定登录接口的路径
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 
 @router.post("/register", response_model=schemas.UserOut)
@@ -90,7 +90,7 @@ def login(data: schemas.UserLogin, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: str | None = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     获取当前用户：
         从请求中提取令牌，验证并返回当前登录用户
@@ -106,8 +106,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     Raises:
         HTTPException: 当令牌无效或用户不存在时抛出401或404错误
     """
+    if not token:
+        raise HTTPException(401, detail="未登录或缺少访问令牌")
+
     # 开发环境支持测试token
-    if token == "test-token":
+    if settings.ENABLE_TEST_TOKEN and token == "test-token":
         # 返回第一个用户作为测试用户
         user = db.query(models.User).first()
         if not user:
@@ -132,7 +135,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-def get_current_user_optional(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user_optional(token: str | None = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
     获取可选的当前用户：
         从请求中提取令牌，验证并返回当前登录用户，如果令牌无效则返回None
@@ -145,8 +148,11 @@ def get_current_user_optional(token: str = Depends(oauth2_scheme), db: Session =
     Returns:
         User | None: 当前登录的用户对象或None（未登录）
     """
+    if not token:
+        return None
+
     # 开发环境支持测试token
-    if token == "test-token":
+    if settings.ENABLE_TEST_TOKEN and token == "test-token":
         # 返回第一个用户作为测试用户
         user = db.query(models.User).first()
         return user

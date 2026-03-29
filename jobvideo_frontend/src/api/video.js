@@ -27,11 +27,19 @@ import axios from 'axios'
  * 
  * 注意：当前使用测试令牌，生产环境应从localStorage或Vuex/Pinia获取真实令牌
  */
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+
 const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    Authorization: 'Bearer test-token'
+  baseURL: apiBaseUrl
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
   }
+  return config
 })
 
 // ==================== API接口函数 ====================
@@ -120,4 +128,12 @@ export function toggleVideoLike(videoId) {
  */
 export function toggleVideoFavorite(videoId) {
   return api.post(`/video/${videoId}/favorite`)
+}
+
+export function login(payload) {
+  return api.post('/auth/login', payload)
+}
+
+export function fetchCurrentUser() {
+  return api.get('/auth/me')
 }

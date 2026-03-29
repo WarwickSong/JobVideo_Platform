@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # 本地应用导入
 # 数据库基础配置
 from app.db import Base, engine
+from app.config import settings
 # 各个模块的路由
 from app.auth import routes as auth_routes  # 认证模块路由（登录、注册等）
 from app.job import routes as job_routes  # 职位模块路由
@@ -37,7 +38,7 @@ app = FastAPI()
 # 这里的配置允许所有来源的请求访问我们的 API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源的请求
+    allow_origins=settings.cors_allow_origins,
     allow_credentials=True,  # 允许携带认证信息（如 cookies）
     allow_methods=["*"],  # 允许所有 HTTP 方法（GET, POST, PUT, DELETE 等）
     allow_headers=["*"],  # 允许所有请求头
@@ -46,7 +47,7 @@ app.add_middleware(
 # 挂载静态文件目录
 # 用于存储和访问上传的视频文件
 # 当访问 /videos 路径时，会从 video_storage 目录中提供静态文件
-app.mount("/videos", StaticFiles(directory="video_storage"), name="videos")
+app.mount("/videos", StaticFiles(directory=settings.VIDEO_STORAGE_DIR), name="videos")
 
 # 注册各个模块的路由
 # 路由是 API 的端点，用于处理客户端的请求

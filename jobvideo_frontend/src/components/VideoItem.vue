@@ -183,6 +183,9 @@ function toggleLike() {
     .catch(err => {
       // 失败：回滚到原始状态
       updateVideo({ is_liked_by_me: originalLiked, like_count: originalCount })
+      if (err?.response?.status === 401) {
+        alert('点赞需要先登录')
+      }
       console.error('点赞失败:', err)
     })
     .finally(() => {
@@ -231,6 +234,9 @@ function toggleFavorite() {
     .catch(err => {
       // 失败：回滚到原始状态
       updateVideo({ is_favorited_by_me: originalFavorited, favorite_count: originalCount })
+      if (err?.response?.status === 401) {
+        alert('收藏需要先登录')
+      }
       console.error('收藏失败:', err)
     })
     .finally(() => {

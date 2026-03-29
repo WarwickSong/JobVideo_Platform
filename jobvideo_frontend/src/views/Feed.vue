@@ -78,8 +78,13 @@ let endX = 0
  * @description 从后端API获取视频数据并填充到videos数组
  */
 onMounted(async () => {
-  const res = await fetchVideoFeed()
-  videos.value = res.data
+  try {
+    const res = await fetchVideoFeed()
+    videos.value = res.data
+  } catch (error) {
+    console.error('加载视频流失败:', error)
+    alert('加载视频流失败，请检查后端服务或部署配置')
+  }
 })
 
 // ==================== 触摸事件处理 ====================
