@@ -1,18 +1,39 @@
 <template>
-  <aside class="demo-login-panel">
+  <!-- 已登录且折叠状态：显示迷你用户按钮 -->
+  <button
+    v-if="currentUser && collapsed"
+    class="demo-login-avatar"
+    type="button"
+    @click="collapsed = false"
+  >
+    <span class="demo-login-avatar__initial">{{ avatarInitial }}</span>
+  </button>
+
+  <!-- 展开状态：显示完整面板 -->
+  <aside v-else class="demo-login-panel">
     <div class="demo-login-panel__header">
       <div>
         <p class="demo-login-panel__eyebrow">演示登录</p>
         <h2>选择一个示例账号直接进入</h2>
       </div>
-      <button
-        v-if="currentUser"
-        class="demo-login-panel__logout"
-        type="button"
-        @click="$emit('logout')"
-      >
-        退出登录
-      </button>
+      <div class="demo-login-panel__header-actions">
+        <button
+          v-if="currentUser"
+          class="demo-login-panel__minimize"
+          type="button"
+          @click="collapsed = true"
+        >
+          —
+        </button>
+        <button
+          v-if="currentUser"
+          class="demo-login-panel__logout"
+          type="button"
+          @click="$emit('logout')"
+        >
+          退出登录
+        </button>
+      </div>
     </div>
 
     <div v-if="currentUser" class="demo-login-panel__current">
@@ -49,7 +70,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { ref, computed, watch } from 'vue'
+
+const props = defineProps({
   currentUser: {
     type: Object,
     default: null
@@ -69,6 +92,20 @@ defineProps({
 })
 
 defineEmits(['login', 'logout'])
+
+// 面板折叠状态：登录后自动折叠，点击迷你按钮展开
+const collapsed = ref(false)
+
+// 监听用户状态：登录成功后自动折叠，退出后恢复展开
+watch(() => props.currentUser, (val) => {
+  collapsed.value = val ? true : false
+})
+
+// 获取用户名的首字符作为头像文字
+const avatarInitial = computed(() => {
+  if (!props.currentUser) return ''
+  return props.currentUser.username.charAt(0).toUpperCase()
+})
 
 const demoAccounts = [
   {
@@ -128,12 +165,40 @@ const demoAccounts = [
   color: #9dc4ff;
 }
 
+.demo-login-panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-login-panel__minimize {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #9dc4ff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-login-panel__minimize:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .demo-login-panel__logout {
   padding: 8px 12px;
   border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-login-panel__logout:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .demo-login-panel__current,
@@ -183,6 +248,42 @@ const demoAccounts = [
   color: #bfd2ea;
 }
 
+/**
+ * 折叠状态：迷你用户头像按钮
+ * 显示用户名的首字符，点击展开完整面板
+ */
+.demo-login-avatar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(10, 18, 30, 0.78);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.demo-login-avatar:hover {
+  background: rgba(20, 32, 48, 0.88);
+  transform: scale(1.08);
+}
+
+.demo-login-avatar__initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 20px;
+  font-weight: 600;
+  color: #9dc4ff;
+}
+
 @media (max-width: 640px) {
   .demo-login-panel {
     padding: 14px;
@@ -193,6 +294,17 @@ const demoAccounts = [
 
   .demo-login-panel__header {
     flex-direction: column;
+  }
+
+  .demo-login-avatar {
+    top: 10px;
+    left: 10px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .demo-login-avatar__initial {
+    font-size: 17px;
   }
 }
 </style>

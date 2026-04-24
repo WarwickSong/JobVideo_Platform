@@ -30,6 +30,27 @@
         @update-video="updateVideo"
       />
     </transition>
+
+    <!-- 视频导航按钮 -->
+    <nav v-if="videos.length" class="video-nav">
+      <button
+        class="video-nav__btn"
+        type="button"
+        :disabled="currentIndex === 0"
+        @click="goToPrev"
+      >
+        ▲
+      </button>
+      <span class="video-nav__indicator">{{ currentIndex + 1 }} / {{ videos.length }}</span>
+      <button
+        class="video-nav__btn"
+        type="button"
+        :disabled="currentIndex === videos.length - 1"
+        @click="goToNext"
+      >
+        ▼
+      </button>
+    </nav>
   </div>
 </template>
 
@@ -125,26 +146,34 @@ function onTouchEnd(e) {
  * 5. 执行视频切换
  */
 function handleSwipe() {
-  // 计算滑动距离
   const distanceY = startY - endY
   const distanceX = startX - endX
-  
-  // 滑动阈值：超过50px才触发切换
   const threshold = 50
 
-  // 判断是否为垂直滑动（垂直距离 > 水平距离）
   if (Math.abs(distanceY) > Math.abs(distanceX)) {
     if (distanceY > threshold) {
-      // 上滑：切换到下一个视频
-      if (currentIndex.value < videos.value.length - 1) {
-        currentIndex.value++
-      }
+      goToNext()
     } else if (distanceY < -threshold) {
-      // 下滑：切换到上一个视频
-      if (currentIndex.value > 0) {
-        currentIndex.value--
-      }
+      goToPrev()
     }
+  }
+}
+
+/**
+ * 切换到上一个视频
+ */
+function goToPrev() {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+  }
+}
+
+/**
+ * 切换到下一个视频
+ */
+function goToNext() {
+  if (currentIndex.value < videos.value.length - 1) {
+    currentIndex.value++
   }
 }
 
@@ -210,5 +239,72 @@ function updateVideo(updatedVideo) {
 .slide-leave-to {
   opacity: 0;
   transform: translateY(-30px);
+}
+
+/**
+ * 视频导航按钮容器
+ * 固定在右侧垂直居中
+ */
+.video-nav {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+  border-radius: 999px;
+  background: rgba(10, 18, 30, 0.78);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+/**
+ * 导航按钮样式
+ */
+.video-nav__btn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.video-nav__btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.video-nav__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/**
+ * 视频位置指示器
+ */
+.video-nav__indicator {
+  font-size: 12px;
+  color: #b7d3ff;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .video-nav {
+    right: 10px;
+    padding: 10px 8px;
+  }
+
+  .video-nav__btn {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
 }
 </style>

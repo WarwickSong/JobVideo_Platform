@@ -38,7 +38,7 @@ cd C:\Coding\JobVideo_Platform
 把下面命令里的环境名改成你自己的：
 
 ```powershell
-conda activate 你的环境名
+conda activate jobvideo-backend
 ```
 
 ### 3. 确认 Python 和 Node 是你预期的版本
@@ -65,7 +65,7 @@ cd C:\Coding\JobVideo_Platform\jobvideo_backend
 
 你可以先按仓库里的示例新建一个本地 `.env`：
 
-- [jobvideo_backend/.env.example](/C:/Coding/JobVideo_Platform/jobvideo_backend/.env.example)
+- [jobvideo_backend/.env.example](../jobvideo_backend/.env.example)
 
 本地开发建议内容：
 
@@ -116,6 +116,9 @@ http://127.0.0.1:8000/video/feed
 ### 1. 新开一个终端窗口
 
 还是先激活同一个 `conda` 环境。
+```powershell
+conda activate jobvideo-backend
+```
 
 ### 2. 进入前端目录
 
@@ -127,7 +130,7 @@ cd C:\Coding\JobVideo_Platform\jobvideo_frontend
 
 参考：
 
-- [jobvideo_frontend/.env.development.example](/C:/Coding/JobVideo_Platform/jobvideo_frontend/.env.development.example)
+- [jobvideo_frontend/.env.development.example](../jobvideo_frontend/.env.development.example)
 
 本地开发建议创建：
 

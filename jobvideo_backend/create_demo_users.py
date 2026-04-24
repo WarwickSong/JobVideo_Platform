@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth.models import User, UserRole
 from app.auth.utils import hash_password
 from app.db import engine
+from app.video.models import Video  # 导入 Video 模型以解决 SQLAlchemy 关系依赖
 
 
 DEMO_PASSWORD = "Demo123456"
