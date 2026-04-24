@@ -46,32 +46,23 @@ api.interceptors.request.use((config) => {
 
 /**
  * 获取视频流列表
- * 
+ *
  * @description 从后端获取视频列表数据，用于Feed页面展示
+ * @param {string} [ownerRole] - 按上传者角色过滤（'seeker' | 'employer' | undefined 表示全部）
  * @returns {Promise<AxiosResponse>} Axios响应对象
- * 
+ *
  * @example
  * const res = await fetchVideoFeed()
- * const videos = res.data // 视频列表数据
- * 
- * 响应数据结构：
- * {
- *   data: [
- *     {
- *       id: 1,
- *       title: '视频标题',
- *       file_path: '/videos/xxx.mp4',
- *       like_count: 10,
- *       is_liked_by_me: false,
- *       favorite_count: 5,
- *       is_favorited_by_me: false
- *     },
- *     ...
- *   ]
- * }
+ * const res = await fetchVideoFeed('employer') // 只看招聘者
+ * const res = await fetchVideoFeed('seeker')   // 只看求职者
+ * const videos = res.data
  */
-export function fetchVideoFeed() {
-  return api.get('/video/feed')
+export function fetchVideoFeed(ownerRole) {
+  const params = {}
+  if (ownerRole) {
+    params.owner_role = ownerRole
+  }
+  return api.get('/video/feed', { params })
 }
 
 /**

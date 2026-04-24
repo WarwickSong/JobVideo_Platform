@@ -100,6 +100,7 @@ def get_video_feed(
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(10, ge=1, le=50, description="每页数量"),
     target_type: schemas.TargetType | None = Query(None, description="按关联类型过滤视频"),
+    owner_role: str | None = Query(None, description="按上传者角色过滤视频（seeker / employer）"),
     current_user: User | None = Depends(get_current_user_optional)  # 可选的当前用户
 ):
     """
@@ -112,17 +113,22 @@ def get_video_feed(
         skip: 跳过的记录数（分页用）
         limit: 每页记录数
         target_type: 目标类型过滤条件（可选）
+        owner_role: 上传者角色过滤条件（可选，seeker/employer）
         current_user: 可选的当前用户（支持未登录）
     
     Returns:
         list[VideoOut | VideoWithTarget]: 视频列表，包含视频信息和关联的目标对象摘要
     """
-    # Step 1: 基础查询：查询视频表
-    query = db.query(models.Video)
+    # Step 1: 基础查询：从视频表关联用户表
+    query = db.query(models.Video).join(User, models.Video.owner_id == User.id)
 
     # Step 2: 如果传递了target_type，添加过滤条件
     if target_type:
         query = query.filter(models.Video.target_type == target_type)
+
+    # Step 3: 如果传递了owner_role，按上传者角色过滤
+    if owner_role:
+        query = query.filter(User.role == owner_role)
         
     # Step 3: 排序、分页
     videos = (
@@ -264,6 +270,7 @@ def get_video_feed(
                 created_at=video.created_at,
                 upload_time=video.upload_time,
                 owner_username=video.owner.username if video.owner else "unknown",
+                owner_role=video.owner.role.value if video.owner else None,
                 target_type=video.target_type,
                 target_id=video.target_id,
                 target_summary=target_summary,

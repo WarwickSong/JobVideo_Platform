@@ -20,7 +20,6 @@
       :key="video.id"
       :src="video.file_path"
       autoplay
-      muted
       loop
       playsinline
       controls
@@ -258,12 +257,12 @@ function toggleFavorite() {
 
 /**
  * 视频播放器样式
- * 填满容器，保持宽高比裁剪
+ * 完整显示视频画面，不裁剪，多余部分黑边
  */
 video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /**

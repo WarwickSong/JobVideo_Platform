@@ -76,14 +76,15 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 DATABASE_URL=sqlite:///./test.db
 VIDEO_STORAGE_DIR=video_storage
-FRONTEND_ORIGINS=http://localhost:5173
+# FRONTEND_ORIGINS=http://localhost:5173
+FRONTEND_ORIGINS=http://192.168.31.184:5173
 ENABLE_TEST_TOKEN=true
 ```
 
 ### 3. 启动后端
 
 ```powershell
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 4. 检查后端是否启动成功
@@ -142,7 +143,8 @@ cd C:\Coding\JobVideo_Platform\jobvideo_frontend
 
 ```env
 VITE_API_BASE_URL=/api
-VITE_DEV_BACKEND_URL=http://localhost:8000
+# VITE_DEV_BACKEND_URL=http://localhost:8000
+VITE_DEV_BACKEND_URL=http://192.168.31.184:8000
 ```
 
 ### 4. 启动前端
@@ -154,7 +156,8 @@ npm run dev
 ### 5. 打开前端页面
 
 ```text
-http://localhost:5173
+# http://localhost:5173
+http://192.168.31.184:5173
 ```
 
 ## 四、联调验证

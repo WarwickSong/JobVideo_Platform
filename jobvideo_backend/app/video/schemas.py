@@ -49,6 +49,7 @@ class VideoWithTarget(BaseModel):
     created_at: datetime  # 创建时间
     upload_time: datetime  # 上传时间
     owner_username: str  # 上传者用户名
+    owner_role: str | None  # 上传者角色
     target_type: TargetType | None  # 目标类型
     target_id: int | None  # 目标ID
     target_summary: dict | None  # 目标对象摘要，由后端构造

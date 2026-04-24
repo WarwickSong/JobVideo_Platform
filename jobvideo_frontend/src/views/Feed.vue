@@ -51,6 +51,34 @@
         ▼
       </button>
     </nav>
+
+    <!-- 角色过滤按钮 -->
+    <nav class="role-filter">
+      <button
+        class="role-filter__btn"
+        type="button"
+        :class="{ active: filterRole === '' }"
+        @click="setFilter('')"
+      >
+        全部
+      </button>
+      <button
+        class="role-filter__btn"
+        type="button"
+        :class="{ active: filterRole === 'employer' }"
+        @click="setFilter('employer')"
+      >
+        招聘者
+      </button>
+      <button
+        class="role-filter__btn"
+        type="button"
+        :class="{ active: filterRole === 'seeker' }"
+        @click="setFilter('seeker')"
+      >
+        求职者
+      </button>
+    </nav>
   </div>
 </template>
 
@@ -65,7 +93,7 @@
  * - 同步视频状态更新
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { fetchVideoFeed } from '../api/video'
 import VideoItem from '../components/VideoItem.vue'
 
@@ -76,6 +104,9 @@ const videos = ref([])
 
 /** 当前显示的视频索引 */
 const currentIndex = ref(0)
+
+/** 角色过滤条件：'' 全部 / 'employer' 招聘者 / 'seeker' 求职者 */
+const filterRole = ref('')
 
 // ==================== 触摸手势状态 ====================
 
@@ -95,18 +126,39 @@ let endX = 0
 
 /**
  * 组件挂载时加载视频列表
- * 
- * @description 从后端API获取视频数据并填充到videos数组
  */
-onMounted(async () => {
+onMounted(() => {
+  loadVideos()
+})
+
+/**
+ * 过滤条件变化时重新加载，并重置到第一个视频
+ */
+watch(filterRole, () => {
+  currentIndex.value = 0
+  loadVideos()
+})
+
+/**
+ * 从后端加载视频列表
+ */
+async function loadVideos() {
   try {
-    const res = await fetchVideoFeed()
+    const res = await fetchVideoFeed(filterRole.value || undefined)
     videos.value = res.data
   } catch (error) {
     console.error('加载视频流失败:', error)
     alert('加载视频流失败，请检查后端服务或部署配置')
   }
-})
+}
+
+/**
+ * 设置角色过滤条件
+ * @param {string} role - ''（全部）| 'employer' | 'seeker'
+ */
+function setFilter(role) {
+  filterRole.value = role
+}
 
 // ==================== 触摸事件处理 ====================
 
@@ -305,6 +357,63 @@ function updateVideo(updatedVideo) {
     width: 38px;
     height: 38px;
     font-size: 16px;
+  }
+}
+
+/**
+ * 角色过滤按钮组
+ * 固定在左侧垂直居中，风格与 DemoLoginPanel 一致
+ */
+.role-filter {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-radius: 999px;
+  background: rgba(10, 18, 30, 0.78);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+.role-filter__btn {
+  width: 56px;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #b7d3ff;
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.role-filter__btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.role-filter__btn.active {
+  background: rgba(157, 196, 255, 0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .role-filter {
+    left: 8px;
+    padding: 10px 6px;
+  }
+
+  .role-filter__btn {
+    width: 48px;
+    font-size: 11px;
+    padding: 6px 0;
   }
 }
 </style>
