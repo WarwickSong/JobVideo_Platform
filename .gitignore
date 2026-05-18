@@ -24,6 +24,7 @@ env/
 *.log
 
 # 上传和媒体文件
+data/
 video_storage/
 media/
 

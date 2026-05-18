@@ -188,17 +188,20 @@ def read_current_user(current_user: models.User = Depends(get_current_user)):
 
 
 @router.get("/users", response_model=list[schemas.UserOut])
-def list_users(db: Session = Depends(get_db)):
+def list_users(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     """
     列出所有用户接口：
         返回系统中所有用户的列表
     
     Args:
         db: 数据库会话
+        current_user: 当前登录的用户对象
     
     Returns:
         list[UserOut]: 所有用户的列表
     """
-    # 查询所有用户
     users = db.query(models.User).all()
     return users

@@ -23,7 +23,7 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/jobs/1" -Method Delete
 # 在 Linux 或 macOS 中设置环境变量并启动应用
 DATABASE_URL=sqlite:///./test.db uvicorn app.main:app --reload
 # 使用 PowerShell 启动 FastAPI 应用
-$env:DATABASE_URL = "sqlite:///./test.db"
+$env:DATABASE_URL = "sqlite:///../data/jobvideo.db"
 uvicorn app.main:app --reload
 📌 部署时使用 PostgreSQL：
 # 在 Linux 或 macOS 中设置环境变量并启动应用
